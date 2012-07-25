@@ -808,11 +808,34 @@ namespace WowPacketParser.Parsing.Parsers
             packet.ReadByte("Relocated");
         }
 
-        [Parser(Opcode.CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE)]
+        [Parser(Opcode.CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE, ClientVersionBuild.Zero, ClientVersionBuild.V4_0_6a_13623)]
         public static void HandleBattlefieldMgrEntryInviteResponse(Packet packet)
         {
             packet.ReadInt32("Battle Id");
             packet.ReadBoolean("Accepted");
+        }
+
+        [Parser(Opcode.CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE, ClientVersionBuild.V4_3_4_15595)]
+        public static void HandleBattlefieldMgrEntryInviteResponse434(Packet packet)
+        {
+            packet.AsHex();
+
+            var guid = new byte[8];
+            guid[6] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[1] = (byte)(packet.ReadBit() ? 1 : 0);
+
+            packet.ReadBit("Accepted");
+
+            guid[5] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[3] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[2] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[0] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[7] = (byte)(packet.ReadBit() ? 1 : 0);
+            guid[4] = (byte)(packet.ReadBit() ? 1 : 0);
+
+            packet.ParseBitStream(guid, 0, 3, 4, 2, 1, 6, 7);
+
+            packet.ToGuid("Guid", guid);
         }
 
         [Parser(Opcode.CMSG_BATTLEFIELD_MGR_EXIT_REQUEST)]
